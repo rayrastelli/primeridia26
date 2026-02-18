@@ -1,16 +1,19 @@
-name: Deploy to AWS S3
-
+name: P26 Deploy Vue App
 on:
   push:
     branches:
-      - main  # Trigger on every push to main
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: P26 Install & Build
+        run: |
+          npm install
+          npm run build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -19,5 +22,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
-      - name: Deploy to S3
-        run: aws s3 sync ./build s3://primeridia-26-main --delete
+      - name: Deploy P26 to S3
+        run: aws s3 sync ./dist s3://primeridia-26-main --delete
+
+      - name: P26 Invalidate CloudFront (Optional but Recommended)
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_ID }} --paths "/*"
